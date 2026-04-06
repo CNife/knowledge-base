@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
 """
 ingest.py — Find raw/ files not yet referenced by any wiki/summaries/ page.
 

@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
 """
 evidence.py — Build a grounded evidence bundle from wiki/ and raw/ sources.
 

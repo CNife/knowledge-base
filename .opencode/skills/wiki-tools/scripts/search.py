@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
 """
 search.py — Keyword search across wiki/ pages. Outputs to stdout only.
 

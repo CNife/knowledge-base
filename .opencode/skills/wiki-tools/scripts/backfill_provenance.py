@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
 """
 backfill_provenance.py — Repair wiki provenance drift against current raw/ files.
 
