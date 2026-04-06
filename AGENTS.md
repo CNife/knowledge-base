@@ -21,6 +21,7 @@ raw/  →  /digest  →  wiki/  →  /query (内联)
 
 ```
 raw/          源材料。仅追加。永不编辑现有文件。Git 跟踪。
+  assets/     图片资源。Git LFS 存储。
 wiki/         编译后的知识页面。按规则演进。Git 跟踪。
   concepts/   原子知识单元
   topics/     更广泛的主题概述
@@ -36,14 +37,17 @@ schemas/      Markdown 模板。稳定契约。
 
 ## 技能 — 实现前先查看
 
+所有 Python 脚本均为 **uv 单脚本模式**，使用 `uv run --script <script>` 运行。
+
 ```bash
 ls .opencode/skills/wiki-tools/scripts/
-python .opencode/skills/wiki-tools/scripts/<name>.py --help
+uv run --script .opencode/skills/wiki-tools/scripts/<name>.py --help
 ```
 
 | 技能 | 用途 |
 |------|------|
 | `digest.py` | 完整摄入流程：重命名新 raw 文件 + 创建摘要存根 |
+| `download_images.py` | 下载 raw/*.md 中图片到 raw/assets/，更新链接为本地路径 |
 | `evidence.py` | 从 wiki/ + raw/ 来源构建有依据的证据包 |
 | `backfill_provenance.py` | 修复 wiki 中过时的 raw 引用和缺失的摘要链接 |
 | `ingest.py` | 查找尚未被 wiki/summaries/ 引用的 raw/ 文件 |
@@ -53,7 +57,7 @@ python .opencode/skills/wiki-tools/scripts/<name>.py --help
 | `stub.py` | 从 schema 模板创建空白 wiki 页面 |
 | `reorganize.py` | 检测 + 修复 Obsidian 图谱问题（断链、孤立、重复） |
 
-添加技能：创建 `.opencode/skills/wiki-tools/scripts/<name>.py`，更新 SKILL.md。
+添加技能：创建 `.opencode/skills/wiki-tools/scripts/<name>.py`（uv 单脚本模式），更新 SKILL.md。
 
 ---
 
@@ -72,7 +76,7 @@ python .opencode/skills/wiki-tools/scripts/<name>.py --help
 ## 有据生成策略
 
 - 查询、分析和任何生成的文本必须仅基于 `wiki/` 内容。
-- 回答或分析前运行 `python .opencode/skills/wiki-tools/scripts/evidence.py "<问题>" --json`。
+- 回答或分析前运行 `uv run --script .opencode/skills/wiki-tools/scripts/evidence.py "<问题>" --json`。
 - 每个实质性声明必须引用一个或多个证据 ID，如 `[S1]`。
 - 如果 wiki 对问题的覆盖不足，明确说明并停止，而非用模型先验填充。
 - `wiki/summaries/` 是主要证据层。`wiki/concepts/` 和 `wiki/topics/` 是综合层，应保持可追溯至摘要/raw/url 来源。
@@ -141,5 +145,27 @@ git commit -m "skill: 添加 <名称>"
 git push
 ```
 
-每次推送前运行 `python .opencode/skills/wiki-tools/scripts/lint.py`。有 lint 错误不推送。
+每次推送前运行 `uv run --script .opencode/skills/wiki-tools/scripts/lint.py`。有 lint 错误不推送。
 不要将 wiki 变更与技能变更打包在同一提交。
+
+---
+
+## 图片处理流程
+
+raw/ 文件中的远程图片链接需要下载到本地：
+
+```bash
+# 1. 预览将要下载的图片
+uv run --script .opencode/skills/wiki-tools/scripts/download_images.py
+
+# 2. 执行下载（图片存入 raw/assets/，链接更新为本地路径）
+uv run --script .opencode/skills/wiki-tools/scripts/download_images.py --apply
+
+# 3. 提交图片（Git LFS 自动处理）
+git add raw/assets/ raw/*.md .gitattributes
+git commit -m "下载图片并更新链接"
+git push
+```
+
+图片文件名格式：`{md文件名}-{index}.{扩展名}`，如 `github-oauth-1.jpg`。
+图片由 Git LFS 自动追踪（见 `.gitattributes` 配置）。
