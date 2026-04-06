@@ -40,7 +40,8 @@ def page_map(pages: list[Path]) -> dict[str, Path]:
 
 
 def links_in(text: str) -> list[str]:
-    return re.findall(r"\[\[([^\]]+)\]\]", text)
+    links = re.findall(r"\[\[([^\]]+)\]\]", text)
+    return [lnk.rstrip(".md") for lnk in links]
 
 
 def frontmatter(text: str) -> dict[str, str]:

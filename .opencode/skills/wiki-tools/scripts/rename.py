@@ -62,6 +62,7 @@ def extract_date(path: Path) -> str | None:
 
 
 def slugify(title: str) -> str:
+    """Convert title to URL-safe slug, preserving meaningful content."""
     prefix = ""
 
     # If title looks like "Author/Repo: Description", extract both
@@ -71,12 +72,11 @@ def slugify(title: str) -> str:
         repo = prefix_match.group(2).lower()
         desc = prefix_match.group(3) if prefix_match.group(3) else ""
         # Clean description
-        desc = re.sub(r'["\'`\\\[\]]', "", desc)  # Remove quotes, brackets, backslash
-        desc = re.sub(r"[;:,!?]", " ", desc)  # Replace punctuation with spaces
-        desc = re.sub(r"\s*[-–—]\s*", " ", desc)  # Normalize dashes
+        desc = re.sub(r'["\'`\\\[\]]', "", desc)
+        desc = re.sub(r"[;:,!?]", " ", desc)
+        desc = re.sub(r"\s*[-–—]\s*", " ", desc)
         desc = re.sub(r"\s+", " ", desc).strip()
-        # Take first meaningful words only
-        words = desc.split()[:5]  # Max 5 words
+        words = desc.split()[:5]
         desc = "-".join(
             w.lower()[:12] for w in words if w and w.isascii() and w.isalpha()
         )
@@ -85,22 +85,37 @@ def slugify(title: str) -> str:
             return f"{prefix}-{desc}"
         return prefix
 
-    # No prefix pattern, just slugify the whole title
+    # Remove common prefixes
     title = re.sub(
         r"^(Summary|Notes?|Paper|Post|Article)\s*[:–—]\s*",
         "",
         title,
         flags=re.IGNORECASE,
     )
+
+    # Remove author attribution (e.g., " - 阮一峰的网络日志")
+    # Pattern: space + dash + space + non-space content at end
+    # Only match when there's clear separation (space-dash-space)
+    title = re.sub(r"\s+[-–—]\s+\S.*$", "", title)
+
     title = re.sub(r'["\'`\\\[\]]', "", title)
     title = re.sub(r"[;:,!?]", " ", title)
     title = re.sub(r"\([^)]*\)", "", title)
-    title = re.sub(r"\s*[-–—]\s*It is an?\s*", ". ", title, flags=re.IGNORECASE)
+
+    # Preserve unicode characters (CJK) as they carry semantic meaning
+    # Only strip control chars and unsafe URL chars
     title = title.lower()
-    title = re.sub(r"[^a-z0-9\s\-]", " ", title)
-    title = re.sub(r"[\s\-]+", "-", title)
+    title = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "", title)
+    title = re.sub(r"\s+", "-", title)
     title = title.strip("-")
-    # Truncate at word boundary, not mid-word
+
+    # For pure ASCII slugs, apply stricter cleaning
+    if all(ord(c) < 128 for c in title):
+        title = re.sub(r"[^a-z0-9\s\-]", " ", title)
+        title = re.sub(r"[\s\-]+", "-", title)
+        title = title.strip("-")
+
+    # Truncate at word boundary
     if len(title) > 45:
         title = title[:45]
         last_dash = title.rfind("-")

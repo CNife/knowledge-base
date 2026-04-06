@@ -59,6 +59,7 @@ def extract_date(path: Path) -> str | None:
 
 
 def slugify(title: str) -> str:
+    """Convert title to URL-safe slug, preserving meaningful content."""
     prefix = ""
 
     prefix_match = re.match(r"^([\w-]+)/([\w-]+):\s*(.*)", title)
@@ -85,14 +86,18 @@ def slugify(title: str) -> str:
         title,
         flags=re.IGNORECASE,
     )
+    title = re.sub(r"\s+[-–—]\s+\S.*$", "", title)
     title = re.sub(r'["\'`\\\[\]]', "", title)
     title = re.sub(r"[;:,!?]", " ", title)
     title = re.sub(r"\([^)]*\)", "", title)
-    title = re.sub(r"\s*[-–—]\s*It is an?\s*", ". ", title, flags=re.IGNORECASE)
     title = title.lower()
-    title = re.sub(r"[^a-z0-9\s\-]", " ", title)
-    title = re.sub(r"[\s\-]+", "-", title)
+    title = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "", title)
+    title = re.sub(r"\s+", "-", title)
     title = title.strip("-")
+    if all(ord(c) < 128 for c in title):
+        title = re.sub(r"[^a-z0-9\s\-]", " ", title)
+        title = re.sub(r"[\s\-]+", "-", title)
+        title = title.strip("-")
     if len(title) > 45:
         title = title[:45]
         last_dash = title.rfind("-")
@@ -323,6 +328,7 @@ def main():
 
         new_path = RAW_DIR / op["new"]
         op["path"].rename(new_path)
+        op["new_path"] = new_path
 
         for ref_page in op["refs"]:
             ref_path = SUMMARIES_DIR / ref_page
@@ -336,7 +342,8 @@ def main():
     if new_raw_files:
         print(f"\n--- Creating {len(new_raw_files)} summaries ---")
         for op in new_raw_files:
-            content = create_summary(op["path"], op["new"])
+            path_to_read = op.get("new_path", op["path"])
+            content = create_summary(path_to_read, op["new"])
             if content and op["new"]:
                 filepath = SUMMARIES_DIR / op["summary"]
                 filepath.write_text(content, encoding="utf-8")

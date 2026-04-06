@@ -24,6 +24,12 @@ DESTINATIONS = {
     "summary": WIKI_DIR / "summaries",
 }
 
+SCHEMA_FILES = {
+    "concept": "概念.md",
+    "topic": "主题.md",
+    "summary": "摘要.md",
+}
+
 
 def slugify(name: str) -> str:
     name = re.sub(r"\.md$", "", name)
@@ -42,7 +48,8 @@ def main():
     args = parser.parse_args()
 
     dest_dir = DESTINATIONS[args.type]
-    schema = (SCHEMAS_DIR / f"{args.type}.md").read_text()
+    schema_file = SCHEMA_FILES[args.type]
+    schema = (SCHEMAS_DIR / schema_file).read_text()
 
     slug = slugify(args.name)
     if args.type == "summary":
