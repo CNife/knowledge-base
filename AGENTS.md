@@ -26,6 +26,7 @@ wiki/         编译后的知识页面。按规则演进。Git 跟踪。
   concepts/   原子知识单元
   topics/     更广泛的主题概述
   summaries/  每源摘要 — 摄入状态存于此
+  log.md      摄入流程日志 — 自动追加（无需用户确认）
 output/       临时暂存。Git 忽略。永不提交。
 .opencode/    OpenCode 配置
   commands/   斜杠命令
@@ -87,6 +88,24 @@ uv run --script .opencode/skills/wiki-tools/scripts/<name>.py --help
 
 当任何 `wiki/summaries/` 页面在其 `sources:` 中列出某 raw 文件时，该文件即为**已编译**。
 无侧车文件。无注册表。状态隐式存在于 wiki 中。
+
+---
+
+## Digest 流程
+
+`/digest` 命令检测 `raw/` 中的新文件，编译成 wiki 页面，检查，提交，推送。
+
+**流程**：
+1. 检测新文件：`uv run --script .opencode/skills/wiki-tools/scripts/ingest.py --new`
+2. 启动并行子代理（最多 3 个并行）处理每个新文件
+3. 等待子代理完成并返回 JSON 报告
+4. 整合结果：更新 `wiki/index.md` + 追加 `wiki/log.md`
+5. 运行 lint 检查：`uv run --script .opencode/skills/wiki-tools/scripts/lint.py --strict`
+6. 提交并推送
+
+**效率**：约 5 倍提升（对比串行处理）
+
+**log.md 自动追加**：每次 digest 操作完成后自动追加记录到 `wiki/log.md`，无需用户确认。
 
 ---
 

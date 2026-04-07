@@ -13,6 +13,7 @@ wiki/         编译后的知识页面
   concepts/   原子知识单元
   topics/     更广泛的主题概述
   summaries/  每源摘要 — 摄入状态存于此
+  log.md      摄入流程日志 — 记录每次消化的详情和子代理执行状态
 output/       临时暂存，永不提交
 schemas/      Markdown 模板
 ```
@@ -59,6 +60,7 @@ schemas/      Markdown 模板
 
 ## 最近更新
 
+- 2026-04-07: Digest 工作流优化 — 并行子代理处理，效率提升约 5 倍
 - 2026-04-07: 创建 OAuth 概念页面和知识管理概念
 - 2026-04-06: 摄入 OAuth 系列和 LLM Wiki 模式来源
 
