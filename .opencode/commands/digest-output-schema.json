@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Digest Sub-agent Output",
+  "description": "子代理摄入流程的输出报告",
+  "type": "object",
+  "required": ["file", "summary_path", "concepts", "topics", "status"],
+  "properties": {
+    "file": {
+      "type": "string",
+      "description": "处理的 raw 文件名（已重命名）",
+      "examples": ["oauth-authorization-code-2026-04-06.md"]
+    },
+    "summary_path": {
+      "type": "string",
+      "description": "摘要页面路径（相对于 wiki/）",
+      "examples": ["summaries/summary-oauth-authorization-code.md"]
+    },
+    "concepts": {
+      "type": "array",
+      "description": "创建或更新的概念页面列表",
+      "items": {
+        "type": "object",
+        "required": ["name", "path"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "概念名称",
+            "examples": ["授权码授权"]
+          },
+          "path": {
+            "type": "string",
+            "description": "概念页面路径（相对于 wiki/）",
+            "examples": ["concepts/授权码授权.md"]
+          },
+          "created": {
+            "type": "boolean",
+            "description": "是否新创建（true）或更新现有页面（false）",
+            "default": true
+          }
+        }
+      },
+      "default": []
+    },
+    "topics": {
+      "type": "array",
+      "description": "创建或更新的主题页面列表",
+      "items": {
+        "type": "object",
+        "required": ["name", "path"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "主题名称",
+            "examples": ["OAuth-授权机制"]
+          },
+          "path": {
+            "type": "string",
+            "description": "主题页面路径（相对于 wiki/）",
+            "examples": ["topics/OAuth-授权机制.md"]
+          },
+          "created": {
+            "type": "boolean",
+            "description": "是否新创建（true）或更新现有页面（false）",
+            "default": true
+          }
+        }
+      },
+      "default": []
+    },
+    "status": {
+      "type": "string",
+      "description": "摄入状态",
+      "enum": ["success", "failure"],
+      "examples": ["success"]
+    },
+    "errors": {
+      "type": "array",
+      "description": "错误信息列表（失败时）",
+      "items": {
+        "type": "string",
+        "examples": ["Failed to read raw file", "Schema validation failed"]
+      },
+      "default": []
+    }
+  },
+  "additionalProperties": false
+}
